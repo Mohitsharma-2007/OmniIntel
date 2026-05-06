@@ -7,7 +7,7 @@ import { DocumentReport, type DocumentData } from "./components/ui/document-repo
 import { ThinkingPaths } from "./components/ui/thinking-paths";
 import { IntelligenceCanvas, type CanvasTab } from '@/components/ui/intelligence-canvas';
 import { cn } from '@/lib/utils';
-import { processQuery, getMarketData, getModels } from '@/lib/openrouter';
+import { processQuery } from '@/lib/openrouter';
 
 const AGENTS = [
     "Core Intelligence Orchestrator Agent", "Real-Time Event Router Agent", "Data Freshness & Consistency Agent", "Conflict Resolution Agent", "Explainability & Traceability Agent",

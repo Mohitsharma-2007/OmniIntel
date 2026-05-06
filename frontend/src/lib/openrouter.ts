@@ -63,6 +63,7 @@ export async function processQuery(query: string, agentId: string = "core_intell
   response: string;
   agent: string;
   sources: string[];
+  data?: any;
 }> {
   const agentPrompt = AGENT_PROMPTS[agentId] || AGENT_PROMPTS.core_intelligence_orchestrator_agent;
   
