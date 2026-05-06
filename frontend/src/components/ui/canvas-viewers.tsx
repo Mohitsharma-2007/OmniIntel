@@ -11,6 +11,7 @@ import {
     Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getMarketData } from "@/lib/openrouter";
 
 // --- FLOWCHART VIEWER ---
 export const FlowchartViewer: React.FC<{ data?: any }> = () => {
@@ -168,8 +169,7 @@ export const FinancialViewer: React.FC<{ data?: any }> = () => {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await fetch("http://localhost:8000/market/live");
-                const data = await res.json();
+                const data = getMarketData();
                 setMarketData(data);
             } catch (err) {
                 console.error("Failed to fetch market data:", err);

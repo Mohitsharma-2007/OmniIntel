@@ -7,6 +7,7 @@ import { DocumentReport, type DocumentData } from "./components/ui/document-repo
 import { ThinkingPaths } from "./components/ui/thinking-paths";
 import { IntelligenceCanvas, type CanvasTab } from '@/components/ui/intelligence-canvas';
 import { cn } from '@/lib/utils';
+import { processQuery, getMarketData, getModels } from '@/lib/openrouter';
 
 const AGENTS = [
     "Core Intelligence Orchestrator Agent", "Real-Time Event Router Agent", "Data Freshness & Consistency Agent", "Conflict Resolution Agent", "Explainability & Traceability Agent",
@@ -135,16 +136,10 @@ function App() {
         }
 
         try {
-            const response = await fetch("http://localhost:8000/query", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    query: message,
-                    agent_id: isSuperMode ? "core_intelligence_orchestrator_agent" : "user_query_interpretation_agent"
-                })
-            });
-
-            const result = await response.json();
+            const result = await processQuery(
+                message,
+                isSuperMode ? "core_intelligence_orchestrator_agent" : "user_query_interpretation_agent"
+            );
 
             if (isDeepThinking) {
                 // Simulate some extra thinking time for "Deep Mode"
