@@ -1,11 +1,12 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
-const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "openrouter/free";
+const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "google/gemma-4-31b";
 
 const FREE_MODELS = [
-  "openrouter/free",
   "google/gemma-4-31b",
   "deepseek/deepseek-chat",
   "mistralai/mistral-7b-instruct",
+  "meta-llama/llama-3.1-8b-instruct",
+  "google/gemma-2-27b-it",
 ];
 
 const AGENT_PROMPTS: Record<string, string> = {
@@ -50,13 +51,20 @@ export async function callOpenRouter(prompt: string, systemInstruction: string =
       if (response.ok) {
         const data = await response.json();
         return data.choices[0].message.content;
+      } else {
+        const errorText = await response.text();
+        console.error(`Model ${model} error:`, response.status, errorText);
+        if (response.status === 401) {
+          return `🔑 401 Error: Invalid API Key. Please check your VITE_OPENROUTER_API_KEY in Vercel settings.`;
+        }
       }
-    } catch {
+    } catch (err) {
+      console.error(`Model ${model} exception:`, err);
       continue;
     }
   }
 
-  return "All AI models failed. Please check your API key and try again.";
+  return "All AI models failed. Please check console for details.";
 }
 
 export async function processQuery(query: string, agentId: string = "core_intelligence_orchestrator_agent"): Promise<{
