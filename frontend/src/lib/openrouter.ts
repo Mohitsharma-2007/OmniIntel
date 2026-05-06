@@ -25,13 +25,16 @@ export async function callOpenRouter(prompt: string, systemInstruction: string =
   }
 
   if (!OPENROUTER_API_KEY.startsWith("sk-or-")) {
-    return "⚠️ Invalid API Key format! Must start with 'sk-or-'. Get a new key from https://openrouter.ai/keys";
+    return "⚠️ Invalid API Key format! Must start with 'sk-or-'. Get a new key from https://openrouter.ai/keys. ⚠️ Make sure you VERIFIED YOUR EMAIL on OpenRouter!";
   }
 
+  const keyPreview = OPENROUTER_API_KEY.substring(0, 10) + "...";
+  console.log("🔑 Using key:", keyPreview);
+  
   const headers = {
     "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
     "Content-Type": "application/json",
-    "HTTP-Referer": window.location.origin,
+    "HTTP-Referer": window.location.origin || "https://omniintel.vercel.app",
     "X-Title": "OmniIntel"
   };
 
