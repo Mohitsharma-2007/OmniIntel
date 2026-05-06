@@ -3,7 +3,7 @@ import glob
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-import google.generativeai as genai
+import requests
 from dotenv import load_dotenv
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,9 +20,75 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-2.5-flash-lite')
+# OpenRouter Configuration
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# Free model priority list (tried in order if primary fails)
+FREE_MODELS = [
+    "openrouter/free",  # Auto-selects best free model
+    "google/gemma-4-31b",
+    "nvidia/nemotron-3-nano-30b-a3b",
+    "tencent/hunyuan-turbo",
+    "deepseek/deepseek-chat",
+    "mistralai/mistral-7b-instruct",
+    "meta-llama/llama-3.1-8b-instruct",
+    "google/gemma-2-27b-it",
+]
+
+# Primary model (set via env, defaults to free auto-router)
+PRIMARY_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+
+def call_openrouter(prompt: str, system_instruction: str = "") -> str:
+    """Call OpenRouter API with smart fallback system."""
+    if not OPENROUTER_API_KEY:
+        raise Exception("OPENROUTER_API_KEY not configured. Please add it to .env")
+    
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://omniintel.ai",
+        "X-Title": "OmniIntel"
+    }
+    
+    messages = []
+    if system_instruction:
+        messages.append({"role": "system", "content": system_instruction})
+    messages.append({"role": "user", "content": prompt})
+    
+    # Try models in priority order
+    models_to_try = [PRIMARY_MODEL] + [m for m in FREE_MODELS if m != PRIMARY_MODEL]
+    
+    last_error = None
+    for model in models_to_try:
+        try:
+            payload = {
+                "model": model,
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 4096
+            }
+            
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=120
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                print(f"✓ Success with model: {model}")
+                return result["choices"][0]["message"]["content"]
+            else:
+                print(f"✗ Model {model} failed: {response.status_code}")
+                last_error = f"Status {response.status_code}"
+                
+        except Exception as e:
+            print(f"✗ Model {model} error: {str(e)[:100]}")
+            last_error = str(e)
+            continue
+    
+    raise Exception(f"All models failed. Last error: {last_error}")
 
 # Cache Agent Prompts
 AGENT_PROMPTS = {}
@@ -49,6 +115,22 @@ class QueryRequest(BaseModel):
 @app.get("/health")
 def health_check():
     return {"status": "online", "agents_loaded": len(AGENT_PROMPTS)}
+
+@app.get("/models")
+def get_models():
+    """Get available models and current configuration."""
+    return {
+        "primary_model": PRIMARY_MODEL,
+        "fallback_models": FREE_MODELS,
+        "api_configured": bool(OPENROUTER_API_KEY and OPENROUTER_API_KEY != "your_openrouter_api_key_here")
+    }
+
+@app.post("/models/set")
+def set_model(model: str):
+    """Set the primary model to use."""
+    global PRIMARY_MODEL
+    PRIMARY_MODEL = model
+    return {"status": "success", "model": model}
 
 # Function for the API to get context (Functional Simulation of Pathway RAG)
 def get_custom_context(query: str):
@@ -189,18 +271,7 @@ async def process_query(req: QueryRequest):
     """
     
     try:
-        response = model.generate_content(full_prompt)
-        
-        # Check if the response was blocked
-        if not response.parts:
-            print(f"DEBUG: Response blocked by safety settings or empty. {response.prompt_feedback}")
-            return {
-                "response": "I'm sorry, I cannot synthesize that specific intelligence at this time due to safety constraints or insufficient data.",
-                "agent": req.agent_id,
-                "sources": []
-            }
-        
-        text = response.text
+        text = call_openrouter(full_prompt)
         
         # If it's a report, try to parse JSON
         if is_report_request:

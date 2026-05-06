@@ -1,0 +1,54 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+venv/
+venv37/
+.venv/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.exe
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Python cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend specific
+frontend/.env
+frontend/node_modules/
+
+# Backend data
+data/
+*.db

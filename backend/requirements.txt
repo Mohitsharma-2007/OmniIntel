@@ -1,7 +1,6 @@
 pathway
 fastapi
 uvicorn
-google-generativeai
 python-dotenv
 pandas
 pydantic
