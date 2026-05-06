@@ -1,0 +1,11 @@
+pathway
+fastapi
+uvicorn
+google-generativeai
+python-dotenv
+pandas
+pydantic
+requests
+beautifulsoup4
+lxml
+feedparser
