@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "dev": "echo Use Vercel dashboard for dev server",
-    "start": "echo Use Vercel dashboard for dev server"
+    "build": "cd frontend && npm install && npm run build"
   },
   "engines": {
     "node": ">=18"
