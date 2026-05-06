@@ -1,14 +1,12 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
-const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "google/gemma-4-31b";
-
-console.log("🔍 API Key loaded:", OPENROUTER_API_KEY ? "YES (length: " + OPENROUTER_API_KEY.length + ")" : "NO");
+const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "google/gemini-2.0-flash-exp";
 
 const FREE_MODELS = [
-  "google/gemma-4-31b",
-  "deepseek/deepseek-chat",
-  "mistralai/mistral-7b-instruct",
+  "google/gemini-2.0-flash-exp",
+  "deepseek/deepseek-chat-v1",
   "meta-llama/llama-3.1-8b-instruct",
-  "google/gemma-2-27b-it",
+  "google/gemma-3-27b-it",
+  "qwen/qwen3-8b-chat",
 ];
 
 const AGENT_PROMPTS: Record<string, string> = {
@@ -28,9 +26,6 @@ export async function callOpenRouter(prompt: string, systemInstruction: string =
     return "⚠️ Invalid API Key format! Must start with 'sk-or-'. Get a new key from https://openrouter.ai/keys. ⚠️ Make sure you VERIFIED YOUR EMAIL on OpenRouter!";
   }
 
-  const keyPreview = OPENROUTER_API_KEY.substring(0, 10) + "...";
-  console.log("🔑 Using key:", keyPreview);
-  
   const headers = {
     "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
     "Content-Type": "application/json",
@@ -53,7 +48,7 @@ export async function callOpenRouter(prompt: string, systemInstruction: string =
           model,
           messages,
           temperature: 0.7,
-          max_tokens: 4096
+          max_tokens: 512
         })
       });
 
@@ -64,7 +59,13 @@ export async function callOpenRouter(prompt: string, systemInstruction: string =
         const errorText = await response.text();
         console.error(`Model ${model} error:`, response.status, errorText);
         if (response.status === 401) {
-          return `🔑 401 Error: Invalid API Key. Please check your VITE_OPENROUTER_API_KEY in Vercel settings.`;
+          return `🔑 Error: Invalid API Key. Please check your key in Vercel settings.`;
+        }
+        if (response.status === 402) {
+          return `💳 Error: No credits! Add credits at https://openrouter.ai/settings/credits`;
+        }
+        if (response.status === 404) {
+          continue; // Try next model
         }
       }
     } catch (err) {
