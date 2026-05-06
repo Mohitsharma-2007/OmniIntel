@@ -1,0 +1,13 @@
+{
+  "name": "omniintel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "echo Use Vercel dashboard for dev server",
+    "start": "echo Use Vercel dashboard for dev server"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

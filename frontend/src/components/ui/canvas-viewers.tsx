@@ -5,12 +5,10 @@ import { motion } from "framer-motion";
 import {
     Activity,
     Globe,
-    GitBranch,
     Users,
     DollarSign,
     Zap,
-    Target,
-    ArrowRight
+    Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
