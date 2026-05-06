@@ -1,6 +1,8 @@
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "google/gemma-4-31b";
 
+console.log("🔍 API Key loaded:", OPENROUTER_API_KEY ? "YES (length: " + OPENROUTER_API_KEY.length + ")" : "NO");
+
 const FREE_MODELS = [
   "google/gemma-4-31b",
   "deepseek/deepseek-chat",
@@ -19,7 +21,11 @@ const AGENT_PROMPTS: Record<string, string> = {
 
 export async function callOpenRouter(prompt: string, systemInstruction: string = ""): Promise<string> {
   if (!OPENROUTER_API_KEY) {
-    return "⚠️ OPENROUTER_API_KEY not configured. Add VITE_OPENROUTER_API_KEY to your .env file.";
+    return "⚠️ API Key Missing! Add VITE_OPENROUTER_API_KEY in Vercel → Settings → Environment Variables → Production. Key must start with 'sk-or-'. Then Redeploy!";
+  }
+
+  if (!OPENROUTER_API_KEY.startsWith("sk-or-")) {
+    return "⚠️ Invalid API Key format! Must start with 'sk-or-'. Get a new key from https://openrouter.ai/keys";
   }
 
   const headers = {
